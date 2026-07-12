@@ -8,7 +8,7 @@ resource "azurerm_data_protection_backup_policy_disk" "data_protection_backup_po
   time_zone                       = each.value.time_zone
 
   dynamic "retention_rule" {
-    for_each = each.value.retention_rule != null ? [each.value.retention_rule] : []
+    for_each = each.value.retention_rule != null ? each.value.retention_rule : []
     content {
       criteria {
         absolute_criteria = retention_rule.value.criteria.absolute_criteria
