@@ -31,29 +31,22 @@ EOT
       priority = number
     })))
   }))
-  # --- Unconfirmed validation candidates, derived from azurerm_data_protection_backup_policy_disk's provider source ---
-  # Not auto-enabled: either a bespoke provider validator we can't safely translate,
-  # or a path that crosses a list-typed block (needs its own for_each wrapping).
-  # Review, translate into a real validation{} block above, and delete once confirmed.
-  # path: name
-  #   condition: can(regex("^[-a-zA-Z0-9]{3,150}$", value))
-  #   message:   DataProtection BackupPolicy name must be 3 - 150 characters long, contain only letters, numbers and hyphens.
-  # path: vault_id
-  #   source:    [from basebackuppolicyresources.ValidateBackupVaultID] !ok
-  # path: vault_id
-  #   source:    [from basebackuppolicyresources.ValidateBackupVaultID] err != nil
-  # path: default_retention_duration
-  #   source:    [from helperValidate.ISO8601Duration] !ok
-  # path: default_retention_duration
-  #   source:    [from helperValidate.ISO8601Duration] err != nil
-  # path: retention_rule.duration
-  #   source:    [from helperValidate.ISO8601Duration] !ok
-  # path: retention_rule.duration
-  #   source:    [from helperValidate.ISO8601Duration] err != nil
-  # path: retention_rule.criteria.absolute_criteria
-  #   source:    validation.StringInSlice value list is not a literal []string - likely a generated PossibleValuesFor*() helper; resolve separately
-  # path: time_zone
-  #   condition: length(value) > 0
-  #   message:   must not be empty
+  validation {
+    condition = alltrue([
+      for k, v in var.data_protection_backup_policy_disks : (
+        can(regex("^[-a-zA-Z0-9]{3,150}$", v.name))
+      )
+    ])
+    error_message = "DataProtection BackupPolicy name must be 3 - 150 characters long, contain only letters, numbers and hyphens."
+  }
+  validation {
+    condition = alltrue([
+      for k, v in var.data_protection_backup_policy_disks : (
+        v.time_zone == null || (length(v.time_zone) > 0)
+      )
+    ])
+    error_message = "must not be empty"
+  }
+  # Note: 7 additional provider-side validators are enforced at apply time but not mirrored as validation{} blocks here (bespoke or non-mechanically-translatable).
 }
 
